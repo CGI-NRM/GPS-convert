@@ -48,9 +48,10 @@ ui <- fluidPage(
                    selected = "all"),
 
       # Select variables to display
-      uiOutput("checkbox")
+      uiOutput("select_X"),
 
-    ),
+      uiOutput("select_Y")
+      ),
 
     # Main panel with output
     mainPanel(
@@ -82,16 +83,24 @@ server <- function(input, output, session) {
   })
     
   # Dynamically generate UI input appears after file is loaded
-  output$checkbox <- renderUI({
-    checkboxGroupInput(inputId = "select_var",
-                       label = "Select variables",
+  output$select_X <- renderUI({
+    selectInput(inputId = "select_X",
+                       label = "Select Longitude Column",
+                       choices = names(df()))
+  })
+
+  output$select_Y <- renderUI({
+    selectInput(inputId = "select_Y",
+                       label = "Select Latitude Column",
                        choices = names(df()))
   })
 
   # Select columns
   df_sel <- reactive({
-    req(input$select_var)
-    df_sel <- df() %>% select(input$select_var)
+      req(input$select_X)
+      req(input$select_Y)
+      df_sel <- df() %>%
+          select(input$select_X, input$select_Y)
   })
 
   # Generate screen table
