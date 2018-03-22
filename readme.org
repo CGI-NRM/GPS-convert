@@ -1,0 +1,21 @@
+* GPS convert
+This shiny app is used to convert GPS coordinates for data that are
+handled by CGI at NRM. Currently the code only supports RT90,
+SWEREF99TM and WGS84. 
+
+If you want to try this code you need to install the following packages.
+
+#+BEGIN_SRC R
+  install.packages(c("shiny","DT","tidyverse",
+                     "readxl","leaflet", "rgdal"))
+
+#+END_SRC
+
+After this you can launch the app with
+
+#+BEGIN_SRC R
+shiny::runGitHub("GPS-Convert", "CGI-NRM")
+
+#+END_SRC
+
+Note that this does require an active internet connection at launch.
