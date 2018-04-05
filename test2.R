@@ -11,7 +11,7 @@ RT90 <- CRS("+init=epsg:4124")
 WGS84 <- CRS("+init=epsg:4326")
 
 REFS <- c(SWEREF99, RT90, WGS84)
-names(REFS) <- c("SWEREF99", "RT90", "WGS84") 
+names(REFS) <- c("SWEREF99", "RT90", "WGS84")
 
 # UI
 ui <- fluidPage(
@@ -31,7 +31,7 @@ ui <- fluidPage(
                         c("RT90", "SWEREF99", "WGS84")),
             tags$hr(),
 
-            radioButtons("disp", "Display", 
+            radioButtons("disp", "Display",
                          choices = c(All = "all", Head = "head"),
                          selected = "all"),
 
@@ -43,7 +43,8 @@ ui <- fluidPage(
         mainPanel(
             tabsetPanel(id = "dataset",
                         tabPanel("FILE", DT::dataTableOutput("rendered_file"),
-                                 downloadButton("downloadData", "Download")),
+                                 downloadButton("downloadData", "Download"),
+                                 downloadButton("downloadData2", "Download2")),
                         tabPanel("Converted GPS coordinates",
                                  DT::dataTableOutput("df_conv")),
                         tabPanel("Map", leafletOutput("map")))
@@ -59,7 +60,7 @@ server <- function(input, output, session) {
                col_names = input$header,
                sheet = 1)
     })
-    
+
   # Dynamically generate UI input appears after file is loaded
     output$select_X <- renderUI({
     selectInput(inputId = "select_X",
@@ -88,7 +89,7 @@ server <- function(input, output, session) {
         }
     })
 
-  # Convert GPS coordinates  
+  # Convert GPS coordinates
     df_conv <- reactive({
         p <- df_sel() %>% select(2, 1)
         inPutGPS <- REFS[[input$gpsfrom]]
@@ -110,23 +111,34 @@ server <- function(input, output, session) {
     })
 
 
-  # Generate map from converted values 
+  # Generate map from converted values
     output$map <- renderLeaflet({
       leaflet() %>%
           addProviderTiles(providers$OpenStreetMap,
                            options = providerTileOptions(noWrap = TRUE)) %>%
           addMarkers(data = df_conv())
     })
-    
+
   # Generate downloadable file
     output$downloadData <- downloadHandler(
       filename = function() {
-          paste(input$uploaded_file, ".csv", sep = "")
+          paste(input$uploaded_file, ".txt", sep = "")
       },
       content = function(file) {
-          write.csv(df_sel(), file, row.names = FALSE)
+          write.table(df_sel(), file, row.names = FALSE, fileEncoding = "utf8", sep = "\t")
       })
 
+
+  # Additional download options
+    output$downloadData2 <- downloadHandler(
+      filename = function() {
+          paste(input$uploaded_file, ".txt", sep = "")
+      },
+      content = function(file) {
+          write.table(cbind(df(), df_conv()), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
+
+      },
+      contentType = "text/csv")
 }
 
 # Start and run the shiny app
