@@ -90,10 +90,10 @@ server <- function(input, output, session) {
 
   # Convert GPS coordinates  
     df_conv <- reactive({
-        p <- df_sel() %>% select(2, 1)
+        # p <- df_sel() %>% select(2, 1)
         inPutGPS <- REFS[[input$gpsfrom]]
         outPutGPS <- REFS[[input$gpsto]]
-        p1 <- SpatialPointsDataFrame(p, data = p, proj4string = inPutGPS)
+        p1 <- SpatialPointsDataFrame(df_sel(), data = df_sel(), proj4string = inPutGPS)
         p2 <- spTransform(p1, outPutGPS)
         colnames(p2@coords) <- c(paste("Longitude", input$gpsto, sep = " "), paste("Latitude", input$gpsto, sep = " "))
         p2@coords
