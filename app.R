@@ -4,7 +4,7 @@ library(tidyverse)
 library(readxl)
 library(leaflet)
 library(rgdal)
-
+options(encoding = 'UTF-8')
 
 SWEREF99 <- CRS("+init=epsg:3006")
 RT90 <- CRS("+init=epsg:4124")
