@@ -1,7 +1,8 @@
 * GPS convert
-This shiny app is used to convert GPS coordinates for data that are
-handled by CGI at NRM. Currently the code only supports RT90,
-SWEREF99TM and WGS84. 
+This shiny app is used to convert GPS coordinates. Currently the code only supports RT90,
+SWEREF99TM, WGS84 and UTM32N. It will import an excel file that holds the gps coordinates
+and after specifying the columns with coordinate data the app will convert values and generate 
+a simple map showing the coordinates.
 
 If you want to try this code you need to install the following packages.
 
@@ -10,6 +11,22 @@ If you want to try this code you need to install the following packages.
                      "readxl","leaflet", "rgdal"))
 
 #+END_SRC
+
+Depending on environment used there are sometimes not possible to install rgdal as above and you need 
+install gdal outside R. On mac os x you can solve the problem by installing gdal via brew.
+
+#+BEGIN_SRC sh
+brew install gdal
+
+#+END_SRC
+
+On Linux based system one can install gdal via package managers. If using apt-get the following will do
+
+#+BEGIN_SRC sh
+sudo apt-get install libgdal1-dev libproj-dev
+
+#+END_SRC
+
 
 After this you can launch the app with
 
