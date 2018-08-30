@@ -9,7 +9,7 @@ options(encoding = 'UTF-8')
 SWEREF99 <- CRS("+init=epsg:3006")
 RT90 <- CRS("+init=epsg:4124")
 WGS84 <- CRS("+init=epsg:4326")
-UTM32N <- CRS("+init=EPSG:32632")
+UTM32N <- CRS("+init=epsg:32632")
 
 REFS <- c(SWEREF99, RT90, WGS84, UTM32N)
 names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
