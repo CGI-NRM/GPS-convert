@@ -7,7 +7,7 @@ library(rgdal)
 options(encoding = 'UTF-8')
 
 SWEREF99 <- CRS("+init=epsg:3006")
-RT90 <- CRS("+init=epsg:4124")
+RT90 <- CRS("+init=epsg:3021")
 WGS84 <- CRS("+init=epsg:4326")
 UTM32N <- CRS("+init=epsg:32632")
 
