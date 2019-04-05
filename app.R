@@ -38,7 +38,9 @@ ui <- fluidPage(
 
             uiOutput("select_X"),
 
-            uiOutput("select_Y")
+            uiOutput("select_Y"),
+            
+            uiOutput("select_N")
         ),
 
         mainPanel(
@@ -74,12 +76,19 @@ server <- function(input, output, session) {
                        label = "Select Column with Latitude data",
                        choices = names(df()))
     })
+    
+    output$select_N <- renderUI({
+      selectInput(inputId = "select_N",
+                  label = "Select Column with Sample name",
+                  choices = names(df()))
+    })
 
     df_sel <- reactive({
       req(input$select_X)
       req(input$select_Y)
+      req(input$select_N)
       df_sel <- df() %>%
-          select(input$select_X, input$select_Y)
+          select(input$select_N, input$select_X, input$select_Y)
     })
 
     output$rendered_file <- DT::renderDataTable({
@@ -95,19 +104,21 @@ server <- function(input, output, session) {
         # p <- df_sel() %>% select(2, 1)
         inPutGPS <- REFS[[input$gpsfrom]]
         outPutGPS <- REFS[[input$gpsto]]
-        p1 <- SpatialPointsDataFrame(df_sel(), data = df_sel(), proj4string = inPutGPS)
+        df <- df_sel()
+        df <- df[,-1]
+        p1 <- SpatialPointsDataFrame(df, data = df_sel(), proj4string = inPutGPS)
         p2 <- spTransform(p1, outPutGPS)
-        colnames(p2@coords) <- c(paste("Longitude", input$gpsto, sep = " "), paste("Latitude", input$gpsto, sep = " "))
-        p2@coords
-
+        #colnames(p2@coords) <- c(paste("Longitude", input$gpsto, sep = " "), paste("Latitude", input$gpsto, sep = " "))
+        #p2@coords
+        p2
     })
 
   # Generate table of converted values
     output$df_conv <- DT::renderDataTable({
         if(input$disp == "head") {
-            head(df_conv())
+            head(as.data.frame(df_conv()))
         } else {
-            df_conv()
+            as.data.frame(df_conv())
         }
     })
 
