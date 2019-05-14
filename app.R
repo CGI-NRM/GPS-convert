@@ -147,7 +147,7 @@ server <- function(input, output, session) {
           paste(input$uploaded_file, ".txt", sep = "")
       },
       content = function(file) {
-          write.table(cbind(df(), df_conv()), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
+          write.table(cbind(as.data.frame(df()), as.data.frame(df_conv())), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
 
       },
       contentType = "text/csv")
