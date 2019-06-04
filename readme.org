@@ -42,3 +42,5 @@ You can also download the app and just open the app.R file in r-studio
 and just press the "Run app" to start it. If prefer to run it outside
 r-studio just copy the app.R code and paste it to your r-session to
 launch the web app.
+
+The current version of the app is running on a free tier session at shinyapps.io and can hence be tested before you install.
