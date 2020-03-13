@@ -27,6 +27,15 @@ sudo apt-get install libgdal1-dev libproj-dev
 
 #+END_SRC
 
+and on fedora one can try
+
+#+BEGIN_SRC sh
+sudo dnf install rgdal expat proj
+
+#+END_SRC
+
+if it fails you will normally get a readable error message from dnf 
+
 
 After this you can launch the app with
 
