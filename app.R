@@ -3,9 +3,10 @@ library(DT)
 library(tidyverse)
 library(readxl)
 library(leaflet)
+library(htmltools)
 library(rgdal)
 options(encoding = 'UTF-8')
-
+source("functions.R")
 SWEREF99 <- CRS("+init=epsg:3006")
 RT90 <- CRS("+init=epsg:4124")
 WGS84 <- CRS("+init=epsg:4326")
@@ -16,13 +17,14 @@ names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
 
 # UI
 ui <- fluidPage(
-    titlePanel(title = "Convert GPS data"),
+    titlePanel(title = "CGI GPS Converter"),
 
     sidebarLayout(
         sidebarPanel(
-            fileInput("uploaded_file", "Choose excel File that holds GPS data",
-                      multiple = TRUE,
-                      accept = c(".xls", ".xlsx")),
+            fileInput("uploaded_file", "Choose file that holds GPS data",
+                      multiple = FALSE,
+                      accept = c(".xls", ".xlsx", ".ods", ".csv",
+        ".tdf", ".txt")),
             tags$hr(),
             checkboxInput("header", "Header", TRUE),
 
@@ -45,13 +47,12 @@ ui <- fluidPage(
 
         mainPanel(
             tabsetPanel(id = "dataset",
-                        tabPanel("FILE", DT::dataTableOutput("rendered_file"),
+                         tabPanel("FILE", DT::dataTableOutput("rendered_file"),
                                  downloadButton("downloadData", "Download"),
                                  downloadButton("downloadData2", "Download2")),
                         tabPanel("Converted GPS coordinates",
                                  DT::dataTableOutput("df_conv")),
-                        tabPanel("Map", leafletOutput("map")))
-        )
+                        tabPanel("Map", leafletOutput("map")))        )
     )
 )
 
@@ -59,16 +60,24 @@ ui <- fluidPage(
 server <- function(input, output, session) {
     df <- reactive({
     req(input$uploaded_file)
-    read_excel(input$uploaded_file$datapath,
-               col_names = input$header,
-               sheet = 1)
+    source("functions.R")
+    load_data(input$uploaded_file$datapath)
+    ## if(grepl(pattern = "xls", input$uploaded_file$datapath)) {
+      ##   read_excel(input$uploaded_file$datapath,
+      ##          col_names = input$header,
+      ##          sheet = 1)
+      ## } else {
+      ##     read.table(input$uploaded_file$datapath,
+      ##                header = input$header,
+      ##                sep = " ")
+      ##   }
     })
 
   # Dynamically generate UI input appears after file is loaded
     output$select_X <- renderUI({
     selectInput(inputId = "select_X",
                        label = "Select Column with Longitude data",
-                       choices = names(df()))
+                choices = names(df()))
     })
 
     output$select_Y <- renderUI({
@@ -88,7 +97,10 @@ server <- function(input, output, session) {
       req(input$select_Y)
       req(input$select_N)
       df_sel <- df() %>%
-          select(input$select_N, input$select_X, input$select_Y)
+          select(input$select_N, input$select_X, input$select_Y) %>%
+          rename(Name = input$select_N , Longitude = input$select_X,
+                 Latitude = input$select_Y)
+      
     })
 
     output$rendered_file <- DT::renderDataTable({
@@ -125,10 +137,10 @@ server <- function(input, output, session) {
 
   # Generate map from converted values
     output$map <- renderLeaflet({
-      leaflet() %>%
+      leaflet(df_conv()) %>%
           addProviderTiles(providers$OpenStreetMap,
                            options = providerTileOptions(noWrap = TRUE)) %>%
-          addMarkers(data = df_conv())
+          addMarkers(label = ~htmlEscape(Name))
     })
 
   # Generate downloadable file
