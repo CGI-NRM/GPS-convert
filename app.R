@@ -8,7 +8,7 @@ library(rgdal)
 options(encoding = 'UTF-8')
 source("functions.R")
 SWEREF99 <- CRS("+init=epsg:3006")
-RT90 <- CRS("+init=epsg:4124")
+RT90 <- CRS("+init=epsg:3021")
 WGS84 <- CRS("+init=epsg:4326")
 UTM32N <- CRS("+init=epsg:32632")
 
@@ -176,7 +176,7 @@ server <- function(input, output, session) {
           paste(input$uploaded_file, ".txt", sep = "")
       },
       content = function(file) {
-          write.table(cbind(df(), df_conv()), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
+          write.table(cbind(as.data.frame(df()), as.data.frame(df_conv())), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
 
       },
       contentType = "text/csv")
