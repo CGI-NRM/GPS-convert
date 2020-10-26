@@ -5,6 +5,7 @@ library(readxl)
 library(leaflet)
 library(htmltools)
 library(rgdal)
+library(shinyhelper)
 options(encoding = 'UTF-8')
 source("functions.R")
 SWEREF99 <- CRS("+init=epsg:3006")
@@ -24,12 +25,14 @@ ui <- fluidPage(
             fileInput("uploaded_file", "Choose file that holds GPS data",
                       multiple = FALSE,
                       accept = c(".xls", ".xlsx", ".ods", ".csv",
-        ".tdf", ".txt", ".tsv")),
+                                 ".tdf", ".txt", ".tsv")) %>%
+            helper(type = "markdown", content = "Input"),
             tags$hr(),
             checkboxInput("header", "Header", TRUE),
 
             selectInput("gpsfrom", "Input GPS reference system",
-                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
+                        c("SWEREF99", "RT90", "WGS84", "UTM32N")) %>%
+            helper(type = "markdown", content = "GPSformats"),
             selectInput("gpsto", "Output GPS reference system",
                         c("SWEREF99", "RT90", "WGS84", "UTM32N")),
             tags$hr(),
@@ -60,6 +63,7 @@ ui <- fluidPage(
 
 # Server logic
 server <- function(input, output, session) {
+    observe_helpers(help_dir = "help_mds")
     df <- reactive({
     req(input$uploaded_file)
     source("functions.R")
@@ -114,7 +118,6 @@ server <- function(input, output, session) {
             df_sel()
         }
     })
-
   # Convert GPS coordinates
     df_conv <- reactive({
         # p <- df_sel() %>% select(2, 1)
