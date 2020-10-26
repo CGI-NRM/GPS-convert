@@ -1,8 +1,7 @@
 * GPS convert
 This shiny app is used to convert GPS coordinates. Currently the code only supports RT90,
-SWEREF99TM, WGS84 and UTM32N. It will import an excel file that holds the gps coordinates
-and after specifying the columns with coordinate data the app will convert values and generate 
-a simple map showing the coordinates.
+SWEREF99TM, WGS84 and UTM32N. It will import a file that holds the gps coordinates (currently supports .xls, .xlsx, .odf, .csv, .txt and .tdf. The last two assumes a tab delimeted file. After specifying the columns with coordinate data and name the app will convert values and generate 
+a simple map showing the coordinates on a map. 
 
 If you want to try this code you need to install the following packages.
 
