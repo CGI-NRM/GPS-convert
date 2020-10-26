@@ -64,15 +64,6 @@ server <- function(input, output, session) {
     req(input$uploaded_file)
     source("functions.R")
     load_data(input$uploaded_file$datapath)
-    ## if(grepl(pattern = "xls", input$uploaded_file$datapath)) {
-      ##   read_excel(input$uploaded_file$datapath,
-      ##          col_names = input$header,
-      ##          sheet = 1)
-      ## } else {
-      ##     read.table(input$uploaded_file$datapath,
-      ##                header = input$header,
-      ##                sep = " ")
-      ##   }
     })
 
   # Dynamically generate UI input appears after file is loaded
@@ -117,15 +108,12 @@ server <- function(input, output, session) {
 
   # Convert GPS coordinates
     df_conv <- reactive({
-        # p <- df_sel() %>% select(2, 1)
         inPutGPS <- REFS[[input$gpsfrom]]
         outPutGPS <- REFS[[input$gpsto]]
         df <- df_sel()
         df <- df[,-1]
         p1 <- SpatialPointsDataFrame(df, data = df_sel(), proj4string = inPutGPS)
         p2 <- spTransform(p1, outPutGPS)
-        #colnames(p2@coords) <- c(paste("Longitude", input$gpsto, sep = " "), paste("Latitude", input$gpsto, sep = " "))
-        #p2@coords
         p2
     })
 
@@ -137,8 +125,6 @@ server <- function(input, output, session) {
         df <- df[,-1]
         p1 <- SpatialPointsDataFrame(df, data = df_sel(), proj4string = inPutGPS)
         p2 <- spTransform(p1, outPutGPS)
-        #colnames(p2@coords) <- c(paste("Longitude", input$gpsto, sep = " "), paste("Latitude", input$gpsto, sep = " "))
-        #p2@coords
         p2
     })
     
