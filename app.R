@@ -5,12 +5,16 @@ library(readxl)
 library(leaflet)
 library(htmltools)
 library(rgdal)
+library(xlsx)
+library(sf)
 options(encoding = 'UTF-8')
 source("functions.R")
-SWEREF99 <- CRS("+init=epsg:3006")
-RT90 <- CRS("+init=epsg:3021")
-WGS84 <- CRS("+init=epsg:4326")
-UTM32N <- CRS("+init=epsg:32632")
+
+SWEREF99 <- 3006
+#SWEREF99 <- sp::CRS("+init=epsg:3006")
+RT90 <- 3021
+WGS84 <- 4326
+UTM32N <- 32632
 
 REFS <- c(SWEREF99, RT90, WGS84, UTM32N)
 names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
@@ -24,7 +28,7 @@ ui <- fluidPage(
             fileInput("uploaded_file", "Choose file that holds GPS data",
                       multiple = FALSE,
                       accept = c(".xls", ".xlsx", ".ods", ".csv",
-        ".tdf", ".txt", ".tsv")),
+                                  ".tdf", ".txt", ".tsv")),
             tags$hr(),
             checkboxInput("header", "Header", TRUE),
 
@@ -47,11 +51,13 @@ ui <- fluidPage(
 
         mainPanel(
             tabsetPanel(id = "dataset",
-                         tabPanel("FILE", DT::dataTableOutput("rendered_file"),
-                                 downloadButton("downloadData", "Download"),
-                                 downloadButton("downloadData2", "Download2")),
+                        tabPanel("Input", DT::dataTableOutput("rendered_file")),
                         tabPanel("Converted GPS coordinates",
-                                 DT::dataTableOutput("df_conv")),
+                                 DT::dataTableOutput("df_conv"),
+                                 downloadButton("downloadData",
+                                                "Download as .csv"),
+                                 downloadButton("downloadData2",
+                                                "Download as .xlsx")),
                         tabPanel("Map", leafletOutput("map")))
 
         )
@@ -92,9 +98,8 @@ server <- function(input, output, session) {
       req(input$select_Y)
       req(input$select_N)
       df_sel <- df() %>%
-          select(input$select_N, input$select_X, input$select_Y) %>%
-          rename(Name = input$select_N , Longitude = input$select_X,
-                 Latitude = input$select_Y)
+          select(input$select_N, input$select_Y, input$select_X) %>%
+          rename(Name = input$select_N , Latitude = input$select_Y, Longitude = input$select_X)
       
     })
 
@@ -111,9 +116,11 @@ server <- function(input, output, session) {
         inPutGPS <- REFS[[input$gpsfrom]]
         outPutGPS <- REFS[[input$gpsto]]
         df <- df_sel()
-        df <- df[,-1]
-        p1 <- SpatialPointsDataFrame(df, data = df_sel(), proj4string = inPutGPS)
-        p2 <- spTransform(p1, outPutGPS)
+        #df <- df[,-1]
+        p1 <- st_as_sf(df, 
+                       coords = c("Longitude", "Latitude"), 
+                       crs = inPutGPS)
+        p2 <- st_transform(p1, outPutGPS)
         p2
     })
 
@@ -122,18 +129,26 @@ server <- function(input, output, session) {
         inPutGPS <- REFS[[input$gpsfrom]]
         outPutGPS <- REFS[["WGS84"]]
         df <- df_sel()
-        df <- df[,-1]
-        p1 <- SpatialPointsDataFrame(df, data = df_sel(), proj4string = inPutGPS)
-        p2 <- spTransform(p1, outPutGPS)
+        #df <- df[,-1]
+        p1 <- st_as_sf(df, 
+                       coords = c("Longitude", "Latitude"), 
+                       crs = inPutGPS)
+        p2 <- st_transform(p1, outPutGPS)
         p2
     })
     
   # Generate table of converted values
     output$df_conv <- DT::renderDataTable({
+        dt <- df_conv()
+        xy <- st_coordinates(dt)
+        yx <- xy[,2:1]
+        dt <- st_set_geometry(dt, NULL)
+        yx <- cbind(dt[,1], yx)
+        names(yx) <- c("Name", "Latitude", "Longitude")
         if(input$disp == "head") {
-            head(as.data.frame(df_conv()))
+            head(yx)
         } else {
-            as.data.frame(df_conv())
+            yx
         }
     })
 
@@ -149,23 +164,28 @@ server <- function(input, output, session) {
   # Generate downloadable file
     output$downloadData <- downloadHandler(
       filename = function() {
-          paste(input$uploaded_file, ".txt", sep = "")
+          paste(basename(input$uploaded_file), ".csv", sep = "")
       },
       content = function(file) {
-          write.table(df_sel(), file, row.names = FALSE, fileEncoding = "utf8", sep = "\t")
+        if(input$disp == "head") {
+          write.table(head(df_conv()), file, row.names = FALSE, fileEncoding
+                      = "utf8", sep = ",")
+          } else {
+          write.table(df_conv(), file, row.names = FALSE, fileEncoding
+                      = "utf8", sep = ",")
+        }
       })
 
 
   # Additional download options
     output$downloadData2 <- downloadHandler(
       filename = function() {
-          paste(input$uploaded_file, ".txt", sep = "")
+          paste(input$uploaded_file, ".xlsx", sep = "")
       },
       content = function(file) {
-          write.table(cbind(as.data.frame(df()), as.data.frame(df_conv())), file, row.names = FALSE, fileEncoding = "UTF-8", sep = "\t")
+          write.xlsx(df_conv(), file,  sheetName = "ConvertedGPS")
 
-      },
-      contentType = "text/csv")
+      })
 }
 
 # Start and run the shiny app
