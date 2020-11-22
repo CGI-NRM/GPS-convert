@@ -144,7 +144,7 @@ server <- function(input, output, session) {
         yx <- xy[,2:1]
         dt <- st_set_geometry(dt, NULL)
         yx <- cbind(dt[,1], yx)
-        names(yx) <- c("Name", "Latitude", "Longitude")
+        colnames(yx) <- c("Name", "Latitude", "Longitude")
         if(input$disp == "head") {
             head(yx)
         } else {

@@ -5,9 +5,11 @@ a simple map showing the coordinates on a map.
 
 If you want to try this code you need to install the following packages.
 
+NB! The conversion is now made with the sf instead of the sp package.
 #+BEGIN_SRC R
   install.packages(c("shiny","DT","tidyverse",
-                     "readxl","leaflet", "rgdal"))
+                     "readxl","leaflet", "rgdal","sf", 
+		     "xlsx"))
 
 #+END_SRC
 
@@ -33,8 +35,14 @@ sudo dnf install rgdal expat proj
 
 #+END_SRC
 
-if it fails you will normally get a readable error message from dnf 
+if it fails you will normally get a readable error message from dnf. 
 
+The xlsx package is for creating excel files directly from R and need
+rJava to work. The rJava packages is at times difficult to install as
+it is dependent on the java version on the computer you are
+running. In case you can not get it to work, download the code here
+and just comment out the xlsx package and the only functionality that
+is lost is the option to download tables as excel files.
 
 After this you can launch the app with
 
@@ -50,5 +58,3 @@ You can also download the app and just open the app.R file in r-studio
 and just press the "Run app" to start it. If prefer to run it outside
 r-studio just copy the app.R code and paste it to your r-session to
 launch the web app.
-
-The current version of the app is running on a free tier session at shinyapps.io and can hence be tested before you install.
