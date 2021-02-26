@@ -5,7 +5,7 @@ library(readxl)
 library(leaflet)
 library(htmltools)
 library(rgdal)
-library(xlsx)
+library(openxlsx)
 library(sf)
 options(encoding = 'UTF-8')
 source("functions.R")
@@ -164,14 +164,20 @@ server <- function(input, output, session) {
   # Generate downloadable file
     output$downloadData <- downloadHandler(
       filename = function() {
-          paste(basename(input$uploaded_file), ".csv", sep = "")
+          paste("GPS_data_", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
+        dt <- df_conv()
+        xy <- st_coordinates(dt)
+        yx <- xy[,2:1]
+        dt <- st_set_geometry(dt, NULL)
+        yx <- cbind(dt[,1], yx)
+        colnames(yx) <- c("Name", "Latitude", "Longitude")
         if(input$disp == "head") {
-          write.table(head(df_conv()), file, row.names = FALSE, fileEncoding
+          write.table(head(yx), file, row.names = FALSE, fileEncoding
                       = "utf8", sep = ",")
           } else {
-          write.table(df_conv(), file, row.names = FALSE, fileEncoding
+          write.table(yx, file, row.names = FALSE, fileEncoding
                       = "utf8", sep = ",")
         }
       })
@@ -180,11 +186,20 @@ server <- function(input, output, session) {
   # Additional download options
     output$downloadData2 <- downloadHandler(
       filename = function() {
-          paste(input$uploaded_file, ".xlsx", sep = "")
+          paste("GPS_data_", Sys.Date(), ".xlsx", sep = "")
       },
       content = function(file) {
-          write.xlsx(df_conv(), file,  sheetName = "ConvertedGPS")
-
+        dt <- df_conv()
+        xy <- st_coordinates(dt)
+        yx <- xy[,2:1]
+        dt <- st_set_geometry(dt, NULL)
+        yx <- cbind(dt[,1], yx)
+        colnames(yx) <- c("Name", "Latitude", "Longitude")
+        if(input$disp == "head") {
+          openxlsx::write.xlsx(head(yx), file)
+        } else {
+          openxlsx::write.xlsx(yx, file,  sheetName = "ConvertedGPS")
+        }
       })
 }
 
