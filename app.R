@@ -2,6 +2,7 @@ library(shiny)
 library(DT)
 library(tidyverse)
 library(readxl)
+library(readODS)
 library(leaflet)
 library(htmltools)
 library(rgdal)
@@ -139,17 +140,12 @@ server <- function(input, output, session) {
     
   # Generate table of converted values
     output$df_conv <- DT::renderDataTable({
-        dt <- df_conv()
-        xy <- st_coordinates(dt)
-        yx <- xy[,2:1]
-        dt <- st_set_geometry(dt, NULL)
-        yx <- cbind(dt[,1], yx)
-        colnames(yx) <- c("Name", "Latitude", "Longitude")
-        if(input$disp == "head") {
-            head(yx)
-        } else {
-            yx
-        }
+      yx <- create_output(res = df_conv())
+      if(input$disp == "head") {
+          head(yx)
+      } else {
+          yx
+      }
     })
 
 
@@ -167,13 +163,8 @@ server <- function(input, output, session) {
           paste("GPS_data_", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
-        dt <- df_conv()
-        xy <- st_coordinates(dt)
-        yx <- xy[,2:1]
-        dt <- st_set_geometry(dt, NULL)
-        yx <- cbind(dt[,1], yx)
-        colnames(yx) <- c("Name", "Latitude", "Longitude")
-        if(input$disp == "head") {
+        yx <- create_output(res = df_conv())  
+          if(input$disp == "head") {
           write.table(head(yx), file, row.names = FALSE, fileEncoding
                       = "utf8", sep = ",")
           } else {
@@ -189,12 +180,7 @@ server <- function(input, output, session) {
           paste("GPS_data_", Sys.Date(), ".xlsx", sep = "")
       },
       content = function(file) {
-        dt <- df_conv()
-        xy <- st_coordinates(dt)
-        yx <- xy[,2:1]
-        dt <- st_set_geometry(dt, NULL)
-        yx <- cbind(dt[,1], yx)
-        colnames(yx) <- c("Name", "Latitude", "Longitude")
+        yx <- create_output(res = df_conv())  
         if(input$disp == "head") {
           openxlsx::write.xlsx(head(yx), file)
         } else {
