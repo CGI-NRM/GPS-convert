@@ -46,11 +46,7 @@ ui <- fluidPage(
                         choices = REFS,
                         selected = REFS[261],
                         selectize = TRUE),
-                     
-#            selectInput("gpsfrom", "Input GPS reference system",
-#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
-#            selectInput("gpsto", "Output GPS reference system",
-#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
+            
             tags$hr(),
 
             radioButtons("disp", "Display",
@@ -118,11 +114,6 @@ server <- function(input, output, session) {
       
     })
     
-    output$rendered_file2 <- DT::renderDataTable({
-      as.numeric(c(input$gpsfrom, input$gpsto))
-
-    })
-
     output$rendered_file <- DT::renderDataTable({
         if(input$disp == "head"){
             head(df_sel())
