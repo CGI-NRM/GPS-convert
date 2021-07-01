@@ -10,15 +10,19 @@ library(openxlsx)
 library(sf)
 options(encoding = 'UTF-8')
 source("functions.R")
+gpscoord <- make_EPSG()[,1:2]
 
-SWEREF99 <- 3006
+#SWEREF99 <- 3006
 #SWEREF99 <- sp::CRS("+init=epsg:3006")
-RT90 <- 3021
-WGS84 <- 4326
-UTM32N <- 32632
+#RT90 <- 3021
+#WGS84 <- 4326
+#UTM32N <- 32632
 
-REFS <- c(SWEREF99, RT90, WGS84, UTM32N)
-names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
+#REFS <- c(SWEREF99, RT90, WGS84, UTM32N)
+#names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
+REFS <- gpscoord[,1]
+names(REFS) <- paste0(gpscoord[,2], " epsg:", gpscoord[,1]) 
+REFS <- as.list(REFS)
 
 # UI
 ui <- fluidPage(
@@ -32,11 +36,21 @@ ui <- fluidPage(
                                   ".tdf", ".txt", ".tsv")),
             tags$hr(),
             checkboxInput("header", "Header", TRUE),
-
-            selectInput("gpsfrom", "Input GPS reference system",
-                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
-            selectInput("gpsto", "Output GPS reference system",
-                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
+            selectInput(inputId = "gpsfrom", 
+                        label = "Input GPS reference system",
+                        choices = REFS,
+                        selected = REFS[2869],
+                        selectize = TRUE),
+            selectInput(inputId = "gpsto",
+                        label = "Output GPS reference system",
+                        choices = REFS,
+                        selected = REFS[261],
+                        selectize = TRUE),
+                     
+#            selectInput("gpsfrom", "Input GPS reference system",
+#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
+#            selectInput("gpsto", "Output GPS reference system",
+#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
             tags$hr(),
 
             radioButtons("disp", "Display",
@@ -103,6 +117,11 @@ server <- function(input, output, session) {
           rename(Name = input$select_N , Latitude = input$select_Y, Longitude = input$select_X)
       
     })
+    
+    output$rendered_file2 <- DT::renderDataTable({
+      as.numeric(c(input$gpsfrom, input$gpsto))
+
+    })
 
     output$rendered_file <- DT::renderDataTable({
         if(input$disp == "head"){
@@ -114,29 +133,28 @@ server <- function(input, output, session) {
 
   # Convert GPS coordinates
     df_conv <- reactive({
-        inPutGPS <- REFS[[input$gpsfrom]]
-        outPutGPS <- REFS[[input$gpsto]]
-        df <- df_sel()
-        #df <- df[,-1]
-        p1 <- st_as_sf(df, 
-                       coords = c("Longitude", "Latitude"), 
-                       crs = inPutGPS)
-        p2 <- st_transform(p1, outPutGPS)
-        p2
+      inPutGPS <- as.numeric(input$gpsfrom)
+      outPutGPS <- as.numeric(input$gpsto)
+      df <- df_sel()
+      #df <- df[,-1]
+      p1 <- st_as_sf(df, 
+                     coords = c("Longitude", "Latitude"), 
+                     crs = inPutGPS)
+      p2 <- st_transform(p1, outPutGPS)
+      p2
     })
 
   # Generate WGS84 values for map even if other formats are asked for  
     df_convMap <- reactive({
-        inPutGPS <- REFS[[input$gpsfrom]]
-        outPutGPS <- REFS[["WGS84"]]
-        df <- df_sel()
-        #df <- df[,-1]
-        p1 <- st_as_sf(df, 
-                       coords = c("Longitude", "Latitude"), 
-                       crs = inPutGPS)
-        p2 <- st_transform(p1, outPutGPS)
-        p2
-    })
+      inPutGPS <- as.numeric(input$gpsfrom)
+      df <- df_sel()
+      #df <- df[,-1]
+      p1 <- st_as_sf(df, 
+                     coords = c("Longitude", "Latitude"), 
+                     crs = inPutGPS)
+      p2 <- st_transform(p1, 4326)
+      p2
+  })
     
   # Generate table of converted values
     output$df_conv <- DT::renderDataTable({
@@ -147,7 +165,6 @@ server <- function(input, output, session) {
           yx
       }
     })
-
 
   # Generate map from converted values
     output$map <- renderLeaflet({
