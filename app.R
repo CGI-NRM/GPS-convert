@@ -10,16 +10,8 @@ library(openxlsx)
 library(sf)
 options(encoding = 'UTF-8')
 source("functions.R")
+#Create list of available formats using RGDAL
 gpscoord <- make_EPSG()[,1:2]
-
-#SWEREF99 <- 3006
-#SWEREF99 <- sp::CRS("+init=epsg:3006")
-#RT90 <- 3021
-#WGS84 <- 4326
-#UTM32N <- 32632
-
-#REFS <- c(SWEREF99, RT90, WGS84, UTM32N)
-#names(REFS) <- c("SWEREF99", "RT90", "WGS84", "UTM32N")
 REFS <- gpscoord[,1]
 names(REFS) <- paste0(gpscoord[,2], " epsg:", gpscoord[,1]) 
 REFS <- as.list(REFS)
@@ -46,11 +38,7 @@ ui <- fluidPage(
                         choices = REFS,
                         selected = REFS[261],
                         selectize = TRUE),
-                     
-#            selectInput("gpsfrom", "Input GPS reference system",
-#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
-#            selectInput("gpsto", "Output GPS reference system",
-#                        c("SWEREF99", "RT90", "WGS84", "UTM32N")),
+            
             tags$hr(),
 
             radioButtons("disp", "Display",
@@ -118,11 +106,6 @@ server <- function(input, output, session) {
       
     })
     
-    output$rendered_file2 <- DT::renderDataTable({
-      as.numeric(c(input$gpsfrom, input$gpsto))
-
-    })
-
     output$rendered_file <- DT::renderDataTable({
         if(input$disp == "head"){
             head(df_sel())
