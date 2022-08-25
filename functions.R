@@ -28,3 +28,12 @@ load_data <- function(file_path, sheet = 1, na_strings = c("NA", "-99", "0", "00
 }
 
 
+create_output <- function(res) {
+  dt <- res
+  xy <- st_coordinates(dt)
+  yx <- xy[,2:1]
+  dt <- st_set_geometry(dt, NULL)
+  yx <- cbind(dt[,1], yx)
+  colnames(yx) <- c("Name", "Latitude", "Longitude")
+  data.frame(yx)
+}
