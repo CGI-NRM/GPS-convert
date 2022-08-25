@@ -158,7 +158,7 @@ server <- function(input, output, session) {
       leaflet(df_convMap()) %>%
           addProviderTiles(providers$OpenStreetMap,
                            options = providerTileOptions(noWrap = TRUE)) %>%
-          addMarkers(label = ~htmlEscape(Name))
+          addCircleMarkers(label = ~htmlEscape(Name))
     })
 
   # Generate downloadable file
